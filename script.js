@@ -1,0 +1,101 @@
+// Get all needed DOM elements
+const form = document.getElementById("checkInForm");
+const nameInput = document.getElementById("attendeeName");
+const teamSelect = document.getElementById("teamSelect");
+const attendeeCount = document.getElementById("attendeeCount");
+const progressBar = document.getElementById("progressBar");
+const greeting = document.getElementById("greeting");
+const attendeeList = document.getElementById("attendeeList");
+const emptyAttendeeMessage = document.getElementById("emptyAttendeeMessage");
+
+// Track attendance
+let count = 0;
+const maxCount = 50;
+
+// handle form submission
+form.addEventListener("submit", function (event) {
+  event.preventDefault();
+
+  // Get form values
+  const name = nameInput.value.trim();
+  const team = teamSelect.value;
+  const teamName = teamSelect.selectedOptions[0].text;
+
+  console.log(name, teamName);
+
+  // Increment count
+  if (count < maxCount) {
+    count++;
+    console.log(`Check-in successful! Total attendees: ${count}`);
+
+    // Update progress bar
+    const percentage = Math.round((count / maxCount) * 100) + "%";
+    console.log(`Progress: ${percentage}`);
+    attendeeCount.textContent = count;
+    progressBar.style.width = percentage;
+
+    // Update team counter
+    const teamCounter = document.getElementById(team + "Count");
+    console.log(teamCounter);
+    teamCounter.textContent = parseInt(teamCounter.textContent, 10) + 1;
+
+    // Add the attendee to the list
+    const attendeeItem = document.createElement("li");
+    const attendeeName = document.createElement("span");
+    const attendeeTeam = document.createElement("span");
+
+    attendeeItem.className = "attendee-item";
+    attendeeName.className = "attendee-name";
+    attendeeTeam.className = "attendee-team";
+    attendeeName.textContent = name;
+    attendeeTeam.textContent = teamName;
+
+    attendeeItem.appendChild(attendeeName);
+    attendeeItem.appendChild(attendeeTeam);
+    attendeeList.appendChild(attendeeItem);
+    emptyAttendeeMessage.style.display = "none";
+
+    // Show a celebration when the attendance goal is reached
+    let message = `Welcome, ${name} from ${teamName}`;
+
+    if (count === maxCount) {
+      let highestTeamCount = 0;
+      let winningTeams = [];
+
+      for (let i = 0; i < teamSelect.options.length; i++) {
+        const option = teamSelect.options[i];
+
+        if (option.value !== "") {
+          const teamCount = parseInt(
+            document.getElementById(option.value + "Count").textContent,
+            10
+          );
+
+          if (teamCount > highestTeamCount) {
+            highestTeamCount = teamCount;
+            winningTeams = [option.text];
+          } else if (teamCount === highestTeamCount) {
+            winningTeams.push(option.text);
+          }
+        }
+      }
+
+      const winnerMessage =
+        winningTeams.length > 1
+          ? `${winningTeams.join(" and ")} tied for the win`
+          : `${winningTeams[0]} won`;
+
+      message = `🎉 We did it! All ${maxCount} attendees are checked in. ${winnerMessage} with ${highestTeamCount} attendees. Thanks, ${name}!`;
+    }
+
+    console.log(message);
+    greeting.textContent = message;
+    greeting.className = "success-message";
+    greeting.style.display = "block";
+
+    form.reset();
+  } else {
+    greeting.textContent = "Sorry, the event is full.";
+    greeting.style.display = "block";
+  }
+});
